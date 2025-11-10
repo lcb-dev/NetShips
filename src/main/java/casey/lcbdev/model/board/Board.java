@@ -5,10 +5,11 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Region;
 import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 /**
  * A resizeable grid container of Cells (CellView<T>).
- * Manages Cell model objects and auto sizes to fit region.
+ * Manages Cells and auto sizes to fit region.
  * 
  * @param <T> occupant type
  */
@@ -19,14 +20,16 @@ public class Board<T> extends Region {
     private final Cell<T>[] cells;
     private final CellView<T>[] views;
     private final ObjectProperty<BoardHandler<T>> handler = new SimpleObjectProperty<>(new DefaultBoardHandler<>());
+    private final BiFunction<Integer,Integer, Cell<T>> cellFactory;
     private final boolean singleSelection = true;
     private Cell<T> selectedCell = null;
 
     @SuppressWarnings("unchecked")
-    public Board(int rows, int cols) {
+    public Board(int rows, int cols, BiFunction<Integer,Integer, Cell<T>> cellFactory) {
         if (rows <= 0 || cols <= 0) throw new IllegalArgumentException("Value for rows and cols must be positive");
         this.rows=rows;
         this.cols=cols;
+        this.cellFactory = cellFactory == null ? (x,y) -> new Cell<>(x,y) : cellFactory;
 
         this.cells = (Cell<T>[]) new Cell[rows * cols];
         this.views = (CellView<T>[]) new CellView[rows * cols];
@@ -39,7 +42,7 @@ public class Board<T> extends Region {
         for (int i = 0; i < total; i++) {
             int x = i % cols;
             int y = i / cols;
-            Cell<T> c = new Cell<>(x, y);
+            Cell<T> c = cellFactory.apply(x, y); // new Cell<>(x, y);
             cells[i] = c;
 
             CellView<T> view = new CellView<>(c);
@@ -105,6 +108,12 @@ public class Board<T> extends Region {
 
     public BoardHandler<T> getHandler() {
         return handler.get();
+    }
+
+    public void refreshAllCells() {
+        for (CellView<T> view : views) {
+            view.refresh();
+        }
     }
 
     @Override
