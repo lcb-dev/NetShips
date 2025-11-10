@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    application
     id("org.openjfx.javafxplugin") version "0.1.0"
+    application
 }
 
 group = "casey.lcbdev"
@@ -22,6 +22,16 @@ javafx {
     modules("javafx.controls", "javafx.fxml")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass.set("casey.lcbdev.NetShips")
 }
