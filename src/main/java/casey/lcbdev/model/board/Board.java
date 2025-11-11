@@ -85,7 +85,7 @@ public class Board<T> extends Region {
         }
     }
 
-    private CellView<T> getViewFor(Cell<T> cell) {
+    public CellView<T> getViewFor(Cell<T> cell) {
         int idx = cell.getY() * cols + cell.getX();
         if (idx < 0 || idx >= views.length) return null;
         return views[idx];
