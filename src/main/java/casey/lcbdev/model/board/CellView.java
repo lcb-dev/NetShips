@@ -60,7 +60,7 @@ public class CellView<T> extends StackPane {
         if(!show) {
             ghostOverlay.setVisible(false);
         } else {
-            ghostOverlay.setFill(valid ? Color.GREEN : Color.RED)
+            ghostOverlay.setFill(valid ? Color.GREEN : Color.RED);
             ghostOverlay.setVisible(true);
         }
     }

@@ -11,19 +11,25 @@ import java.util.function.Consumer;
 
 public class ShipPlacementHandler implements BoardHandler<Ship> {
     private final Board<Ship> board;
-    private final Supplier<Ship> shipFactory;
+    private  Supplier<Ship> shipFactory;
     private final Consumer<Ship> placedCallback;
-    private final int shipLength;
+    private  int shipLength;
 
     private Orientation orientation = Orientation.HORIZONTAL;
     private List<Cell<Ship>> lastGhostCells = new ArrayList<>();
 
-    public ShipPlacementHandler(Board<Ship> board, Supplier<Ship> shipFactory,Consumer<Ship> placedCallback ,int shipLength) {
+    public ShipPlacementHandler(Board<Ship> board, Supplier<Ship> shipFactory,int shipLength, Consumer<Ship> placedCallback ) {
         this.board = board;
         this.shipFactory = shipFactory;
         this.placedCallback = placedCallback;
         if(shipLength <= 0) throw new IllegalArgumentException("Ship length must be greater than 0");
         this.shipLength = shipLength;
+    }
+
+    public void setShipSupplier(Supplier<Ship> supplier, int length) {
+        this.shipFactory = supplier;
+        this.shipLength = length;
+        clearGhost();
     }
 
     private void showGhostAt(Cell<Ship> start) {
@@ -102,24 +108,26 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
             return;
         }
 
-        if(button == MouseButton.PRIMARY) {
+        if (button == MouseButton.PRIMARY) {
             List<Cell<Ship>> candidate = computeCandidateCells(cell);
             boolean valid = isCandidateValid(candidate);
-            if(valid) {
+            if (valid && shipFactory != null) {
                 Ship ship = shipFactory.get();
                 ShipCell[] shipCells = candidate.stream()
-                    .map(c -> (ShipCell) c)
-                    .toArray(ShipCell[]::new);
+                        .map(c -> (ShipCell)c)
+                        .toArray(ShipCell[]::new);
                 ship.placeOnCells(shipCells);
-                for(Cell<Ship> c : candidate) {
-                    c.setOccupant(ship);
-                }
                 board.refreshAllCells();
+                if (placedCallback != null) placedCallback.accept(ship);
                 clearGhost();
             }
         }
     }
 
     public Orientation getOrientation() { return orientation; }
+    public void toggleOrientation() {
+        orientation = orientation.toggle();
+        clearGhost();
+    }
     public void setOrientation(Orientation o) { this.orientation = o; }
 }
