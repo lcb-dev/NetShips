@@ -38,10 +38,9 @@ public class NetShips extends Application {
             Platform.exit();
         });
 
-        // Use VBox for vertical layout with spacing
-        VBox menuRoot = new VBox(10); // 10 pixels of spacing between buttons
+        VBox menuRoot = new VBox(10); 
         menuRoot.setPadding(new Insets(20));
-        menuRoot.setAlignment(Pos.CENTER); // center buttons in the window
+        menuRoot.setAlignment(Pos.CENTER); 
         menuRoot.getChildren().addAll(startBtn, quitBtn);
 
         Scene menuScene = new Scene(menuRoot, 800, 600);
@@ -62,7 +61,6 @@ public class NetShips extends Application {
 
         Board<Ship> board = getShipBoard(title);
 
-        // Create a layout to hold topBar and board
         javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
         root.setTop(topBar);
         root.setCenter(board);
@@ -93,10 +91,6 @@ public class NetShips extends Application {
             }
         });
         return board;
-    }
-
-    private void refreshAllCellViews(Board<Ship> board) {
-        board.refreshAllCells();
     }
 
     private void backToMenu(Stage stage) {
