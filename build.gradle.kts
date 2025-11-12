@@ -49,9 +49,10 @@ tasks.test {
     systemProperty("prism.text", "t2k")
 
     testLogging {
-        events("started", "passed", "skipped", "failed")
+        events("passed", "skipped", "failed")
         showStandardStreams = true
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        displayGranularity = 2
     }
 }
 

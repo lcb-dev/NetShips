@@ -183,4 +183,8 @@ public class GameScreen extends BorderPane {
         this.requestFocus();
         return scene;
     }
+
+    public Board getBoard() {
+        return this.board;
+    }
 }

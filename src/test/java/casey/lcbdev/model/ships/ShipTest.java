@@ -1,7 +1,6 @@
-package casey.lcbdev.model;
+package casey.lcbdev.model.ships;
 
 import casey.lcbdev.model.board.ShipCell;
-import casey.lcbdev.model.ships.*;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

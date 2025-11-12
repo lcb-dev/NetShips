@@ -1,7 +1,5 @@
-package casey.lcbdev.model;
+package casey.lcbdev.model.board;
 
-import casey.lcbdev.model.board.Board;
-import casey.lcbdev.model.board.ShipCell;
 import casey.lcbdev.model.ships.Ship;
 
 import org.junit.jupiter.api.BeforeEach;
