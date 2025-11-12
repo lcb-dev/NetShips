@@ -1,33 +1,58 @@
 package casey.lcbdev.ui;
 
+import casey.lcbdev.model.game.Player;
 import casey.lcbdev.model.board.Board;
+import casey.lcbdev.model.board.DefaultBoardHandler;
 import casey.lcbdev.model.board.ShipCell;
 import casey.lcbdev.model.board.ShipPlacementHandler;
 import casey.lcbdev.model.ships.Destroyer;
 import casey.lcbdev.model.ships.Ship;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import java.util.function.Consumer;
 
 import java.util.function.Supplier;
 public class GameScreen extends BorderPane {
-    private final Board<Ship> board;
+    private Board<Ship> board;
     private ShipPlacementHandler placementHandler;
-    private final ShipSelectorPane selector;
-    private final Label statusLabel = new Label("Place your ships");
+    private ShipSelectorPane selector;
+    private final Label statusLabel = new Label();
+    private final Player player = new Player();
 
     public GameScreen() {
+        initBoard();
+        initSelector();
+        var placedCallback = createPlacedCallback();
+        createPlacementHandler(placedCallback);
+        wireHandlerToBoard();
+        layoutUI();
+        setupKeyHandlers();
+
+        this.setOnMouseClicked(e -> this.requestFocus());
+        this.requestFocus();
+    }
+
+    // ---------- init helpers ----------
+
+    private void initBoard() {
         board = new Board<>(10, 10, (x, y) -> new ShipCell(x, y));
         board.setPrefSize(600, 600);
+    }
 
+    private void initSelector() {
         selector = new ShipSelectorPane(new ShipSelectorPane.ShipSelectionListener() {
             @Override
             public void onShipSelected(Supplier<Ship> supplier, int length, String key) {
+                if (player.hasPlaced(key)) {
+                    statusLabel.setText("Already placed: " + key);
+                    return;
+                }
                 if (placementHandler != null) {
                     placementHandler.setShipSupplier(supplier, length);
                     statusLabel.setText("Selected: " + key);
@@ -44,7 +69,7 @@ public class GameScreen extends BorderPane {
 
             @Override
             public void onShipPlaced(String key) {
-                selector.markPlaced("S");
+                selector.markPlaced(key);
                 statusLabel.setText("Placed: " + key);
             }
         }, () -> {
@@ -53,52 +78,94 @@ public class GameScreen extends BorderPane {
                 statusLabel.setText("Orientation: " + placementHandler.getOrientation());
             }
         });
+    }
 
-        java.util.function.Consumer<Ship> placedCallback = placedShip -> {
+    private Consumer<Ship> createPlacedCallback() {
+        return placedShip -> {
             String key = mapShipToKey(placedShip);
-            if (key != null) {
+            if (key == null) return;
+
+            boolean added = player.addShip(key, placedShip);
+            if (!added) {
+                javafx.application.Platform.runLater(() ->
+                    statusLabel.setText("Failed to record placement for: " + key)
+                );
+                return;
+            }
+
+            javafx.application.Platform.runLater(() -> {
+                selector.markPlaced(key);
+
+                selector.clearSelection();
+
+                if (placementHandler != null) placementHandler.setShipSupplier(null, 0);
+
+                statusLabel.setText("Placed: " + placedShip.getName());
+            });
+
+            if (player.allPlaced()) {
+                if (placementHandler != null) placementHandler.setShipSupplier(null, 0);
+
+                board.setHandler(new casey.lcbdev.model.board.DefaultBoardHandler<>());
+
                 javafx.application.Platform.runLater(() -> {
-                    selector.markPlaced(key);
-                    statusLabel.setText("Placed: " + placedShip.getName());
+                    selector.disableAll();
+                    statusLabel.setText("All ships placed! Ready.");
                 });
             }
         };
+    }
 
+    private void createPlacementHandler(java.util.function.Consumer<Ship> placedCallback) {
         placementHandler = new ShipPlacementHandler(
                 board,
                 () -> new Destroyer(null),
                 2,
                 placedCallback
         );
+    }
 
+    private void wireHandlerToBoard() {
         board.setHandler(placementHandler);
+    }
 
+    // ---------- layout ----------
+
+    private void layoutUI() {
         HBox center = new HBox(10);
         center.setPadding(new Insets(8));
         center.getChildren().addAll(board, selector);
         HBox.setHgrow(board, Priority.ALWAYS);
-        board.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         selector.setPrefWidth(200);
 
         this.setCenter(center);
         this.setBottom(statusLabel);
         BorderPane.setMargin(statusLabel, new Insets(6));
+    }
 
+    // ---------- key handlers ----------
+
+    private void setupKeyHandlers() {
         this.setOnKeyPressed(evt -> {
             if (evt.getCode() == KeyCode.R) {
-                placementHandler.toggleOrientation();
-                statusLabel.setText("Orientation: " + placementHandler.getOrientation());
+                if (placementHandler != null) {
+                    placementHandler.toggleOrientation();
+                    statusLabel.setText("Orientation: " + placementHandler.getOrientation());
+                }
             } else if (evt.getCode() == KeyCode.ESCAPE) {
-                placementHandler.setShipSupplier(null, 0);
+                if (placementHandler != null) placementHandler.setShipSupplier(null, 0);
                 selector.resetAll();
                 statusLabel.setText("Cancelled selection");
             }
         });
-
-        this.setOnMouseClicked(e -> this.requestFocus());
-        this.requestFocus();
     }
 
+    // ---------- small helper(s) ----------
+
+    /**
+     * Heuristic mapping from Ship -> selector key used by ShipSelectorPane
+     * (keeps previous mapping logic centralised).
+     */
     private String mapShipToKey(Ship s) {
         if (s == null) return null;
         String name = s.getName().toLowerCase();
@@ -107,8 +174,8 @@ public class GameScreen extends BorderPane {
         if (name.contains("battleship") || len == 4) return "battleship";
         if (name.contains("destroyer") || (len == 3 && name.contains("destroyer"))) return "destroyer";
         if (name.contains("submarine") || (len == 3 && name.contains("sub"))) return "submarine";
-        if (name.contains("patrolboat") || len == 2) return "patrolboat";
-        return name.replaceAll("\\s","").toLowerCase();
+        if (name.contains("patrol") || len == 2) return "patrolboat";
+        return name.replaceAll("\\s", "").toLowerCase();
     }
 
     public Scene createScene(double w, double h) {

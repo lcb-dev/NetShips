@@ -33,17 +33,23 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
     }
 
     private void showGhostAt(Cell<Ship> start) {
+        if (shipFactory == null || shipLength <= 0) {
+            clearGhost();
+            return;
+        }
+
         clearGhost();
 
         List<Cell<Ship>> candidate = computeCandidateCells(start);
         boolean valid = isCandidateValid(candidate);
 
-        for(Cell<Ship> c : candidate) {
+        for (Cell<Ship> c : candidate) {
             CellView<Ship> view = board.getViewFor(c);
-            if(view != null) {
+            if (view != null) {
                 view.setGhostVisual(true, valid);
             }
         }
+
         lastGhostCells = candidate;
     }
 
@@ -90,6 +96,7 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
 
     @Override
     public void onHoverEnter(Cell<Ship> cell) {
+        if (shipFactory == null || shipLength <= 0) return;
         showGhostAt(cell);
     }
 
@@ -102,7 +109,14 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
 
     @Override
     public void onClick(Cell<Ship> cell, MouseButton button, int clickCount) {
-        if(button == MouseButton.SECONDARY) {
+        if (shipFactory == null || shipLength <= 0) {
+            if (button == MouseButton.SECONDARY) {
+                orientation = orientation.toggle();
+            }
+            return;
+        }
+
+        if (button == MouseButton.SECONDARY) {
             orientation = orientation.toggle();
             showGhostAt(cell);
             return;
@@ -113,15 +127,15 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
             boolean valid = isCandidateValid(candidate);
             if (valid && shipFactory != null) {
                 Ship ship = shipFactory.get();
-                String shipName = ship.getName();
-                System.out.println(ship);
-                System.out.println(shipName);
                 ShipCell[] shipCells = candidate.stream()
-                        .map(c -> (ShipCell)c)
+                        .map(c -> (ShipCell) c)
                         .toArray(ShipCell[]::new);
+
                 ship.placeOnCells(shipCells);
                 board.refreshAllCells();
+
                 if (placedCallback != null) placedCallback.accept(ship);
+
                 clearGhost();
             }
         }

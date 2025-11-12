@@ -50,7 +50,7 @@ public class ShipSelectorPane extends VBox {
         specs.put("battleship", new ShipSpec("Battleship", 4, () -> new Battleship(null)));
         specs.put("destroyer", new ShipSpec("Destroyer", 3, () -> new Destroyer(null)));
         specs.put("submarine", new ShipSpec("Submarine", 3, () -> new Submarine(null)));
-        specs.put("patrolboat", new ShipSpec("Patrol Boat", 2, () -> new PatrolBoat(null)));   
+        specs.put("patrolboat", new ShipSpec("Patrol boat", 2, () -> new PatrolBoat(null)));   
 
         for (Map.Entry<String, ShipSpec> e : specs.entrySet()) {
             String key = e.getKey();
@@ -95,5 +95,27 @@ public class ShipSelectorPane extends VBox {
             tb.setSelected(false);
         }
         infoLabel.setText("Select a ship");
+    }
+
+    public void disableAll() {
+        for (ToggleButton tb : buttonToKey.keySet()) {
+            tb.setDisable(true);
+        }
+        rotateBtn.setDisable(true);
+        infoLabel.setText("Placement complete.");
+    }
+
+    public void enableAll(){
+        for (ToggleButton tb : buttonToKey.keySet()) {
+            tb.setDisable(false);
+            tb.setSelected(false);
+        }
+        rotateBtn.setDisable(false);
+        infoLabel.setText("Select a ship to place.");
+    }
+
+    public void clearSelection() {
+        toggleGroup.selectToggle(null);
+        infoLabel.setText("Select a ship to place.");
     }
 }

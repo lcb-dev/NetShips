@@ -34,7 +34,12 @@ public class CellView<T> extends StackPane {
     }
 
     public void setHoverVisual(boolean hover) {
-        bg.setFill(hover ? Color.CYAN : Color.WHITE);
+        // bg.setFill(hover ? Color.CYAN : Color.WHITE); // OLD.
+        if(hover) {
+            bg.setFill(Color.CYAN);
+        } else {
+            refresh();
+        }
     }
 
     public void setSelected(boolean selected) {
@@ -146,7 +151,7 @@ public class CellView<T> extends StackPane {
 
     private Color getColorForShipLength(int length) {
         return switch(length) {
-            case 5 -> Color.AZURE;
+            case 5 -> Color.BLUE;
             case 4 -> Color.DARKGREEN;
             case 3 -> Color.RED;
             case 2 -> Color.YELLOW;
