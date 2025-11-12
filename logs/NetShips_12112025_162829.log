@@ -1,0 +1,22 @@
+[12:11:2025-16:28:29] casey.lcbdev.NetShips:main:INFO:: Launching with args: []
+[12:11:2025-16:28:29] casey.lcbdev.NetShips:start:INFO:: Starting NetShips.
+[12:11:2025-16:28:36] casey.lcbdev.NetShips:showGame:INFO:: Opening new game screen.
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:<init>:INFO:: Building game screen.
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:initBoard:INFO:: Board init.
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:initSelector:INFO:: Selector init
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:createPlacementHandler:INFO:: Placement callback handler creation for: casey.lcbdev.ui.GameScreen$$Lambda/0x000000008819bb78@621679f5
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:layoutUI:INFO:: Building layout UI.
+[12:11:2025-16:28:36] casey.lcbdev.ui.GameScreen:setupKeyHandlers:INFO:: Setting up key handlers.
+[12:11:2025-16:28:38] casey.lcbdev.ui.ShipSelectorPane:lambda$new$5:INFO:: Placing: Carrier (5)
+[12:11:2025-16:28:39] casey.lcbdev.ui.GameScreen:mapShipToKey:INFO:: Mapping ship to key. SHIP = C5
+[12:11:2025-16:28:39] casey.lcbdev.ui.ShipSelectorPane:lambda$new$5:INFO:: Placing: Battleship (4)
+[12:11:2025-16:28:40] casey.lcbdev.ui.GameScreen:mapShipToKey:INFO:: Mapping ship to key. SHIP = B4
+[12:11:2025-16:28:41] casey.lcbdev.ui.ShipSelectorPane:lambda$new$5:INFO:: Placing: Destroyer (3)
+[12:11:2025-16:28:42] casey.lcbdev.ui.GameScreen:mapShipToKey:INFO:: Mapping ship to key. SHIP = D3
+[12:11:2025-16:28:43] casey.lcbdev.ui.ShipSelectorPane:lambda$new$5:INFO:: Placing: Submarine (3)
+[12:11:2025-16:28:44] casey.lcbdev.ui.GameScreen:mapShipToKey:INFO:: Mapping ship to key. SHIP = S3
+[12:11:2025-16:28:45] casey.lcbdev.ui.ShipSelectorPane:lambda$new$5:INFO:: Placing: Patrol boat (2)
+[12:11:2025-16:28:46] casey.lcbdev.ui.GameScreen:mapShipToKey:INFO:: Mapping ship to key. SHIP = P2
+[12:11:2025-16:28:46] casey.lcbdev.ui.ShipSelectorPane:disableAll:INFO:: Disabling toggle buttons.
+[12:11:2025-16:28:49] casey.lcbdev.NetShips:lambda$showGame$0:FINE:: Returning to menu.
+[12:11:2025-16:28:50] casey.lcbdev.NetShips:lambda$backToMenu$1:INFO:: Shutting down.

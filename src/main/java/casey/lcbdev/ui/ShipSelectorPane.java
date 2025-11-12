@@ -1,6 +1,9 @@
 package casey.lcbdev.ui;
 
 import casey.lcbdev.model.ships.*;
+import java.util.logging.Logger;
+import casey.lcbdev.util.Logging;
+
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -13,6 +16,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class ShipSelectorPane extends VBox {
+    private static final Logger logger = Logging.getLogger(ShipSelectorPane.class);
     public static class ShipSpec {
         public final String name;
         public final int length;
@@ -66,7 +70,9 @@ public class ShipSelectorPane extends VBox {
 
             tb.setOnAction(event -> {
                 if(tb.isSelected()) {
-                    infoLabel.setText("Placing: " + s.name + " (" + s.length + ")");
+                    String placementText = "Placing: " + s.name + " (" + s.length + ")";
+                    infoLabel.setText(placementText);
+                    logger.info(placementText);
                     listener.onShipSelected(s.supplier, s.length, key);
                 } else {
                     infoLabel.setText("Select a ship");
@@ -90,6 +96,7 @@ public class ShipSelectorPane extends VBox {
     }
 
     public void resetAll() {
+        logger.info("Resetting toggle buttons.");
         for (ToggleButton tb : buttonToKey.keySet()) {
             tb.setDisable(false);
             tb.setSelected(false);
@@ -98,6 +105,7 @@ public class ShipSelectorPane extends VBox {
     }
 
     public void disableAll() {
+        logger.info("Disabling toggle buttons.");
         for (ToggleButton tb : buttonToKey.keySet()) {
             tb.setDisable(true);
         }
@@ -106,6 +114,7 @@ public class ShipSelectorPane extends VBox {
     }
 
     public void enableAll(){
+        logger.info("Enabling toggle buttons.");
         for (ToggleButton tb : buttonToKey.keySet()) {
             tb.setDisable(false);
             tb.setSelected(false);

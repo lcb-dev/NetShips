@@ -1,11 +1,12 @@
 package casey.lcbdev.model.board;
 
 import casey.lcbdev.model.ships.Ship;
+import casey.lcbdev.util.Logging;
+import java.util.logging.Logger;
 import javafx.scene.input.MouseButton;
-
 import java.util.List;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 
@@ -14,6 +15,7 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
     private  Supplier<Ship> shipFactory;
     private final Consumer<Ship> placedCallback;
     private  int shipLength;
+    private static final Logger logger = Logging.getLogger(ShipPlacementHandler.class);
 
     private Orientation orientation = Orientation.HORIZONTAL;
     private List<Cell<Ship>> lastGhostCells = new ArrayList<>();
@@ -137,6 +139,8 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
                 if (placedCallback != null) placedCallback.accept(ship);
 
                 clearGhost();
+
+                logger.info("Placed [" + ship.toString() + "] at cells: " + Arrays.toString(shipCells));
             }
         }
     }

@@ -1,6 +1,9 @@
 package casey.lcbdev;
 
+import java.util.Arrays;
+import java.util.logging.Logger;
 import casey.lcbdev.ui.GameScreen;
+import casey.lcbdev.util.Logging;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -15,8 +18,11 @@ import javafx.stage.Stage;
 
 public class NetShips extends Application {
 
+    private static final Logger logger = Logging.getLogger(NetShips.class);
+
     @Override
     public void start(Stage primaryStage) {
+        logger.info("Starting NetShips.");
         Button startBtn = new Button("Start");
         startBtn.setOnAction(_ -> showGame(primaryStage));
 
@@ -36,6 +42,7 @@ public class NetShips extends Application {
     }
 
     private void showGame(Stage stage) {
+        logger.info("Opening new game screen.");
         Button backButton = new Button("Back");
         Label title = new Label("NetShips - New Game");
         HBox topBar = new HBox(10, backButton, title);
@@ -51,7 +58,10 @@ public class NetShips extends Application {
         Scene gameScene = new Scene(root, 1800, 1600);
         stage.setScene(gameScene);
 
-        backButton.setOnAction(e -> backToMenu(stage));
+        backButton.setOnAction(e -> {
+            logger.fine("Returning to menu.");
+            backToMenu(stage);
+        });
 
         gameScreen.requestFocus();
     }
@@ -61,7 +71,10 @@ public class NetShips extends Application {
         startBtn.setOnAction(e -> showGame(stage));
 
         Button quitBtn = new Button("Quit");
-        quitBtn.setOnAction(e -> Platform.exit());
+        quitBtn.setOnAction(e -> {
+            logger.info("Shutting down.");
+            Platform.exit();
+        });
 
         VBox menuRoot = new VBox(10);
         menuRoot.setPadding(new Insets(20));
@@ -73,6 +86,8 @@ public class NetShips extends Application {
     }
 
     public static void main(String[] args) {
+        Logging.init();
+        logger.info("Launching with args: " + Arrays.toString(args));
         launch(args);
     }
 }

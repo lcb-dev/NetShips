@@ -1,13 +1,13 @@
 package casey.lcbdev.ui;
 
+import java.util.logging.Logger;
+import casey.lcbdev.util.Logging;
 import casey.lcbdev.model.game.Player;
 import casey.lcbdev.model.board.Board;
-import casey.lcbdev.model.board.DefaultBoardHandler;
 import casey.lcbdev.model.board.ShipCell;
 import casey.lcbdev.model.board.ShipPlacementHandler;
 import casey.lcbdev.model.ships.Destroyer;
 import casey.lcbdev.model.ships.Ship;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -24,8 +24,10 @@ public class GameScreen extends BorderPane {
     private ShipSelectorPane selector;
     private final Label statusLabel = new Label();
     private final Player player = new Player();
+    private static final Logger logger = Logging.getLogger(GameScreen.class);
 
     public GameScreen() {
+        logger.info("Building game screen.");
         initBoard();
         initSelector();
         var placedCallback = createPlacedCallback();
@@ -41,11 +43,13 @@ public class GameScreen extends BorderPane {
     // ---------- init helpers ----------
 
     private void initBoard() {
+        logger.info("Board init.");
         board = new Board<>(10, 10, (x, y) -> new ShipCell(x, y));
         board.setPrefSize(600, 600);
     }
 
     private void initSelector() {
+        logger.info("Selector init");
         selector = new ShipSelectorPane(new ShipSelectorPane.ShipSelectionListener() {
             @Override
             public void onShipSelected(Supplier<Ship> supplier, int length, String key) {
@@ -116,7 +120,8 @@ public class GameScreen extends BorderPane {
         };
     }
 
-    private void createPlacementHandler(java.util.function.Consumer<Ship> placedCallback) {
+    private void createPlacementHandler(Consumer<Ship> placedCallback) {
+        logger.info("Placement callback handler creation for: " + placedCallback.toString());
         placementHandler = new ShipPlacementHandler(
                 board,
                 () -> new Destroyer(null),
@@ -132,6 +137,7 @@ public class GameScreen extends BorderPane {
     // ---------- layout ----------
 
     private void layoutUI() {
+        logger.info("Building layout UI.");
         HBox center = new HBox(10);
         center.setPadding(new Insets(8));
         center.getChildren().addAll(board, selector);
@@ -146,6 +152,7 @@ public class GameScreen extends BorderPane {
     // ---------- key handlers ----------
 
     private void setupKeyHandlers() {
+        logger.info("Setting up key handlers.");
         this.setOnKeyPressed(evt -> {
             if (evt.getCode() == KeyCode.R) {
                 if (placementHandler != null) {
@@ -167,6 +174,7 @@ public class GameScreen extends BorderPane {
      * (keeps previous mapping logic centralised).
      */
     private String mapShipToKey(Ship s) {
+        logger.info("Mapping ship to key. SHIP = " + s.toString());
         if (s == null) return null;
         String name = s.getName().toLowerCase();
         int len = s.getLength();
@@ -179,6 +187,7 @@ public class GameScreen extends BorderPane {
     }
 
     public Scene createScene(double w, double h) {
+        logger.info("Create scene with dimensions: W="+w+" H="+h);
         Scene scene = new Scene(this, w, h);
         this.requestFocus();
         return scene;
