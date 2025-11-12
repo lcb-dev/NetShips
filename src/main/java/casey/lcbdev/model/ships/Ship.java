@@ -69,4 +69,10 @@ public class Ship {
     public ShipCell[] getCellsOccupied() { return cellsOccupied; }
     public int getLength() { return length; }
     public String getName() { return name; }
+
+    @Override
+    public String toString() {
+        String shortName = name != null && !name.isEmpty() ? name.substring(0, 1).toUpperCase() : "S";
+        return shortName + length;
+    }
 }

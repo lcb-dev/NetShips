@@ -48,7 +48,7 @@ public class NetShips extends Application {
         root.setTop(topBar);
         root.setCenter(gameScreen);
 
-        Scene gameScene = new Scene(root, 800, 600);
+        Scene gameScene = new Scene(root, 1800, 1600);
         stage.setScene(gameScene);
 
         backButton.setOnAction(e -> backToMenu(stage));

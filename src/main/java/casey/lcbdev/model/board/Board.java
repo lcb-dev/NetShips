@@ -42,7 +42,7 @@ public class Board<T> extends Region {
         for (int i = 0; i < total; i++) {
             int x = i % cols;
             int y = i / cols;
-            Cell<T> c = cellFactory.apply(x, y); // new Cell<>(x, y);
+            Cell<T> c = cellFactory.apply(x, y);
             cells[i] = c;
 
             CellView<T> view = new CellView<>(c);

@@ -29,7 +29,7 @@ public class Cell<T> {
     public boolean setOccupant(T occupant) {
         if (!occupiable) return false;
         this.occupant = occupant;
-        this.occupied = occupant != null;   // In case something like null somehow gets passed...
+        this.occupied = occupant != null;
         return true;
     }
 

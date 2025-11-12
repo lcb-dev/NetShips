@@ -70,7 +70,7 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
                 if (c == null) break;
                 out.add(c);
             }
-        } else { // VERTICAL
+        } else { 
             for (int i = 0; i < shipLength; i++) {
                 Cell<Ship> c = board.getCell(sx, sy + i);
                 if (c == null) break;
@@ -113,6 +113,9 @@ public class ShipPlacementHandler implements BoardHandler<Ship> {
             boolean valid = isCandidateValid(candidate);
             if (valid && shipFactory != null) {
                 Ship ship = shipFactory.get();
+                String shipName = ship.getName();
+                System.out.println(ship);
+                System.out.println(shipName);
                 ShipCell[] shipCells = candidate.stream()
                         .map(c -> (ShipCell)c)
                         .toArray(ShipCell[]::new);

@@ -44,7 +44,7 @@ public class GameScreen extends BorderPane {
 
             @Override
             public void onShipPlaced(String key) {
-                selector.markPlaced(key);
+                selector.markPlaced("S");
                 statusLabel.setText("Placed: " + key);
             }
         }, () -> {
