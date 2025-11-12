@@ -277,9 +277,7 @@ public class GameScreen extends BorderPane {
     // ------------ Handling attack interactions ---------------
 
     private void maybePerformAIMoves() {
-        System.out.println("ai move?");
         if (!isPvAI || matchController == null || aiAgent == null) return;
-        System.out.println("ai move!");
         while (matchController.isTurn(remotePlayer) && !matchController.isAllSunk(localPlayer)) {
             AIPlayer.Coord c = aiAgent.pickNextAttack();
             if (c == null) {
@@ -292,7 +290,7 @@ public class GameScreen extends BorderPane {
             if (target.isOccupied()) {
                 target.setHit(true);
             } else {
-                target.setIncomingShot(ShotState.MISS);  // << important
+                target.setIncomingShot(ShotState.MISS); 
             }
             logger.info("AI attacks " + c.x + "," + c.y + " -> " + aiRes.type);
 
