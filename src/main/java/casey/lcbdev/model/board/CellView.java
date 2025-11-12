@@ -11,14 +11,11 @@ import java.util.Objects;
 /**
  * Minimal default view for a Cell. 
  */
-@SuppressWarnings("unused")
 public class CellView<T> extends StackPane {
     final Cell<T> cell;
     private final Rectangle bg;
     private final Label marker;
     private final Rectangle ghostOverlay = new Rectangle();
-    private boolean showingGhost = false;
-
     public CellView(Cell<T> cell) {
         this.cell = cell;
         this.bg = new Rectangle();
@@ -35,7 +32,6 @@ public class CellView<T> extends StackPane {
     }
 
     public void setHoverVisual(boolean hover) {
-        // bg.setFill(hover ? Color.CYAN : Color.WHITE); // OLD.
         if(hover) {
             bg.setFill(Color.CYAN);
         } else {
@@ -65,7 +61,6 @@ public class CellView<T> extends StackPane {
      * @param valid Is the placement valid. Green=yes, Red=no.
      */
     public void setGhostVisual(boolean show, boolean valid) {
-        this.showingGhost = show;
         if(!show) {
             ghostOverlay.setVisible(false);
         } else {
@@ -78,24 +73,24 @@ public class CellView<T> extends StackPane {
         setGhostVisual(false, false);
     }
 
-    /*
-     * UI DRAWING
-     */
-
-    // @Deprecated
-    // public void refresh() {
-    //     if(cell.isOccupied() && cell.getOccupant() != null) {
-    //         marker.setText(cell.getOccupant().toString());
-    //     } else {
-    //         marker.setText("");
-    //     }
-    // }
-
     public void refresh() {
+        if (cell instanceof ShipCell shipCell) {
+            // Show incoming shots from AI
+            if (shipCell.getIncomingShot() == ShotState.MISS) {
+                marker.setText("•");
+                marker.setVisible(true);
+                bg.setFill(Color.DARKGRAY);
+                return;
+            } else if (shipCell.isHit()) {
+                marker.setText("X");
+                marker.setVisible(true);
+                bg.setFill(Color.RED);
+                return;
+            }
+        }
         bg.setStroke(Color.GRAY);
 
-        // Default cell visual - when nothing is in it.
-        if(!cell.isOccupied() || cell.getOccupant() == null) {
+        if (!cell.isOccupied() || cell.getOccupant() == null) {
             marker.setText("");
             marker.setVisible(false);
             bg.setFill(Color.WHITE);
@@ -103,21 +98,45 @@ public class CellView<T> extends StackPane {
             return;
         }
 
-        // Anything that isn't a ship... shouldn't happen, but handle it anyway.
         Object occ = cell.getOccupant();
-        if(!(occ instanceof Ship)) {
+
+        if (occ instanceof ShotState) {
+            ShotState state = (ShotState) occ;
+            marker.setVisible(false);
+
+            switch (state) {
+                case UNKNOWN -> {
+                    bg.setFill(Color.WHITE);
+                }
+                case MISS -> {
+                    bg.setFill(Color.DARKGRAY);
+                    marker.setText("•");
+                    marker.setVisible(true);
+                }
+                case HIT -> {
+                    bg.setFill(Color.RED);
+                    marker.setText("X");
+                    marker.setVisible(true);
+                }
+            }
+            return;
+        }
+
+        if (!(occ instanceof Ship)) {
             marker.setText(Objects.toString(occ));
             marker.setVisible(true);
             bg.setFill(Color.LIGHTGRAY);
+            bg.setOpacity(1.0);
             return;
         }
 
         Ship ship = (Ship) occ;
 
         int partIndex = getShipPartIndex(ship);
+
         String symbol = getSymbolForShip(ship);
 
-        marker.setText(symbol + (partIndex+1));
+        marker.setText(partIndex >= 0 ? symbol + (partIndex + 1) : symbol);
         marker.setVisible(true);
 
         Color fill = getColorForShipLength(ship.getLength());

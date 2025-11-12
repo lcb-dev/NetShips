@@ -10,12 +10,12 @@ public class DefaultBoardHandler<T> implements BoardHandler<T> {
 
     @Override
     public void onHoverEnter(Cell<T> cell) {
-        System.out.println("Hover enter: " + cell);
+        // System.out.println("Hover enter: " + cell);
     }
 
     @Override
     public void onHoverExit(Cell<T> cell) {
-        System.out.println("Hover exit: " + cell);
+        // System.out.println("Hover exit: " + cell);
     }
 
     @Override

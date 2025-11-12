@@ -26,13 +26,16 @@ public class NetShips extends Application {
         Button startBtn = new Button("Start");
         startBtn.setOnAction(_ -> showGame(primaryStage));
 
+        Button pveBtn = new Button("Start vs AI");
+        pveBtn.setOnAction(_ -> showGameVsAI(primaryStage));
+
         Button quitBtn = new Button("Quit");
         quitBtn.setOnAction(_ -> Platform.exit());
 
         VBox menuRoot = new VBox(10);
         menuRoot.setPadding(new Insets(20));
         menuRoot.setAlignment(Pos.CENTER);
-        menuRoot.getChildren().addAll(startBtn, quitBtn);
+        menuRoot.getChildren().addAll(startBtn, pveBtn, quitBtn);
 
         Scene menuScene = new Scene(menuRoot, 800, 600);
 
@@ -49,7 +52,7 @@ public class NetShips extends Application {
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setPadding(new Insets(8));
 
-        GameScreen gameScreen = new GameScreen();
+        GameScreen gameScreen = new GameScreen(false);
 
         BorderPane root = new BorderPane();
         root.setTop(topBar);
@@ -65,6 +68,28 @@ public class NetShips extends Application {
 
         gameScreen.requestFocus();
     }
+
+    private void showGameVsAI(Stage stage) {
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> backToMenu(stage));
+
+        Label title = new Label("NetShips - Versus AI");
+        HBox topBar = new HBox(10, backButton, title);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setPadding(new Insets(8));
+
+        GameScreen gameScreen = new GameScreen(true);
+
+        BorderPane root = new BorderPane();
+        root.setTop(topBar);
+        root.setCenter(gameScreen);
+
+        Scene gameScene = new Scene(root, 1800, 1600);
+        stage.setScene(gameScene);
+
+        Platform.runLater(gameScreen::requestFocus);
+    }
+
 
     private void backToMenu(Stage stage) {
         Button startBtn = new Button("Start");
