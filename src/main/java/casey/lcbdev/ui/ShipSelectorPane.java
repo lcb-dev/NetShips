@@ -33,9 +33,6 @@ public class ShipSelectorPane extends VBox {
     private final ToggleGroup toggleGroup = new ToggleGroup();
     private final Button rotateBtn = new Button("Rotate (R)");
     private final Label infoLabel = new Label("Select a ship");
-    private final Runnable onRotate;
-    private final ShipSelectionListener listener;
-
     public interface ShipSelectionListener {
         void onShipSelected(Supplier<Ship> supplier, int length, String key);
         void onShipDeselected();
@@ -43,8 +40,6 @@ public class ShipSelectorPane extends VBox {
     }
 
     public ShipSelectorPane(ShipSelectionListener listener, Runnable onRotate) {
-        this.listener=listener;
-        this.onRotate=onRotate;
         setSpacing(8);
         setPadding(new Insets(8));
         getStyleClass().add("ship-selector");

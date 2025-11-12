@@ -23,7 +23,7 @@ public class ShipPlacementHandlerTest {
         CountDownLatch latch = new CountDownLatch(1);
         Supplier<Ship> supplier = () -> { latch.countDown(); return new Ship("Test",1,null); };
 
-        ShipPlacementHandler handler = new ShipPlacementHandler(board, supplier, 1, ship -> {});
+        new ShipPlacementHandler(board, supplier, 1, ship -> {});
 
         Ship s = supplier.get();
         assertEquals("Test", s.getName());

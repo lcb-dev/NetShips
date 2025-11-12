@@ -11,6 +11,7 @@ import java.util.Objects;
 /**
  * Minimal default view for a Cell. 
  */
+@SuppressWarnings("unused")
 public class CellView<T> extends StackPane {
     final Cell<T> cell;
     private final Rectangle bg;

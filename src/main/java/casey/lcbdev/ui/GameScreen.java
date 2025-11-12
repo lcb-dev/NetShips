@@ -175,7 +175,6 @@ public class GameScreen extends BorderPane {
      */
     private String mapShipToKey(Ship s) {
         logger.info("Mapping ship to key. SHIP = " + s.toString());
-        if (s == null) return null;
         String name = s.getName().toLowerCase();
         int len = s.getLength();
         if (name.contains("carrier") || len == 5) return "carrier";
@@ -193,7 +192,7 @@ public class GameScreen extends BorderPane {
         return scene;
     }
 
-    public Board getBoard() {
+    public Board<Ship> getBoard() {
         return this.board;
     }
 }
