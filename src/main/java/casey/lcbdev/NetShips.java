@@ -108,6 +108,7 @@ public class NetShips extends Application {
 
         Scene menuScene = new Scene(menuRoot, 800, 600);
         stage.setScene(menuScene);
+        logger.info("Finished loading menu.");
     }
 
     public static void main(String[] args) {
