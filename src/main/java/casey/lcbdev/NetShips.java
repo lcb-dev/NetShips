@@ -95,6 +95,9 @@ public class NetShips extends Application {
         Button startBtn = new Button("Start");
         startBtn.setOnAction(e -> showGame(stage));
 
+        Button pveBtn = new Button("Start vs AI");
+        pveBtn.setOnAction(e -> showGameVsAI(stage));
+
         Button quitBtn = new Button("Quit");
         quitBtn.setOnAction(e -> {
             logger.info("Shutting down.");
