@@ -2,116 +2,184 @@ package casey.lcbdev.model.game;
 
 import casey.lcbdev.model.board.ShotState;
 import casey.lcbdev.util.Logging;
-import javafx.application.Platform;
 
 import java.util.logging.Logger;
 
+/**
+ * Central game coordinator that manages match flow and delegates to appropriate handlers.
+ * This class is UI-agnostic and can work with local AI or remote network opponents.
+ */
 public class GameManager {
     private static final Logger logger = Logging.getLogger(GameManager.class);
 
     private final MatchController matchController;
     private final Player localPlayer;
     private final Player opponentPlayer;
-    private final AIPlayer aiAgent;
-    private final boolean vsAI;
-
+    private final OpponentHandler opponentHandler;
     private BoardUpdater boardUpdater;
 
     public interface BoardUpdater {
-        void updatePlayerCell(int x, int y);
-        void updateOpponentCell(int x, int y, ShotState state);
+        void updateLocalShipCell(int x, int y);
+        void updateOpponentShotCell(int x, int y, ShotState state);
         void showStatus(String message);
+        void onGameOver(boolean localPlayerWon);
     }
 
-    public GameManager(Player local, Player opponent, boolean vsAI, AIPlayer ai, MatchController mc) {
+    public interface OpponentHandler {
+        /**
+         * Called when it becomes the opponent's turn.
+         * Implementation should execute opponent's attack(s) and call back through GameManager.
+         * @param callback Use this to report opponent's attacks back to the game
+         */
+        void executeOpponentTurn(OpponentMoveCallback callback);
+        boolean shouldAutoExecuteTurn();
+    }
+
+    public interface OpponentMoveCallback {
+        void reportAttack(int x, int y);
+    }
+
+    public GameManager(Player local, Player opponent, OpponentHandler handler) {
         this.localPlayer = local;
         this.opponentPlayer = opponent;
-        this.vsAI = vsAI;
-        this.aiAgent = ai;
-        this.matchController = mc;
+        this.opponentHandler = handler;
+        this.matchController = new MatchController(localPlayer, opponentPlayer, localPlayer);
     }
 
     public void setBoardUpdater(BoardUpdater updater) {
         this.boardUpdater = updater;
     }
 
-    public void playerAttack(int x, int y) {
+    // Local player
+    public void handleLocalAttack(int x, int y) {
         if (!matchController.isTurn(localPlayer)) {
-            if (boardUpdater != null) boardUpdater.showStatus("Not your turn!");
+            updateStatus("Not your turn!");
             return;
         }
 
-        AttackResult res = matchController.attack(localPlayer, opponentPlayer, x, y);
+        AttackResult result = matchController.attack(localPlayer, opponentPlayer, x, y);
+        processAttackResult(result, x, y, true);
 
-        handleAttackResult(res, x, y, true);
+        // Game over?
+        if (matchController.isAllSunk(opponentPlayer)) {
+            if (boardUpdater != null) {
+                boardUpdater.onGameOver(true);
+            }
+            return;
+        }
 
-        if (vsAI && matchController.isTurn(opponentPlayer)) {
-            performAIMoves();
+        if (result.type == AttackResult.Type.MISS && 
+            opponentHandler != null && 
+            opponentHandler.shouldAutoExecuteTurn()) {
+            triggerOpponentTurn();
         }
     }
 
-    private void handleAttackResult(AttackResult res, int x, int y, boolean isPlayerAttack) {
-        switch (res.type) {
-            case INVALID -> {
-                if (boardUpdater != null) boardUpdater.showStatus("Invalid attack.");
+    public void handleOpponentAttack(int x, int y) {
+        if (!matchController.isTurn(opponentPlayer)) {
+            logger.warning("Opponent attacked out of turn");
+            return;
+        }
+
+        AttackResult result = matchController.attack(opponentPlayer, localPlayer, x, y);
+        processAttackResult(result, x, y, false);
+
+        // Game over?
+        if (matchController.isAllSunk(localPlayer)) {
+            if (boardUpdater != null) {
+                boardUpdater.onGameOver(false);
             }
-            case ALREADY -> {
-                if (boardUpdater != null) boardUpdater.showStatus("Already attacked that cell.");
-            }
+        }
+    }
+
+    private void processAttackResult(AttackResult result, int x, int y, boolean isLocalAttack) {
+        switch (result.type) {
+            case INVALID -> updateStatus("Invalid attack at " + x + "," + y);
+            
+            case ALREADY -> updateStatus("Already attacked " + x + "," + y);
+            
             case MISS -> {
-                if (isPlayerAttack) {
-                    if (boardUpdater != null) boardUpdater.updateOpponentCell(x, y, ShotState.MISS);
+                if (isLocalAttack) {
+                    updateOpponentBoard(x, y, ShotState.MISS);
+                    updateStatus("Miss at " + x + "," + y);
                 } else {
-                    if (boardUpdater != null) boardUpdater.updatePlayerCell(x, y);
+                    updateLocalBoard(x, y);
+                    updateStatus("Opponent missed");
                 }
                 matchController.endTurn();
             }
+            
             case HIT -> {
-                if (isPlayerAttack) {
-                    if (boardUpdater != null) boardUpdater.updateOpponentCell(x, y, ShotState.HIT);
-                    if (boardUpdater != null) boardUpdater.showStatus("Hit! (" + res.shipKey + ")");
+                if (isLocalAttack) {
+                    updateOpponentBoard(x, y, ShotState.HIT);
+                    updateStatus("Hit! (" + result.shipKey + ")");
                 } else {
-                    if (boardUpdater != null) boardUpdater.updatePlayerCell(x, y);
+                    updateLocalBoard(x, y);
+                    updateStatus("Opponent hit your " + result.shipKey);
                 }
             }
+            
             case SUNK -> {
-                if (isPlayerAttack) {
-                    if (boardUpdater != null) boardUpdater.updateOpponentCell(x, y, ShotState.HIT);
-                    if (boardUpdater != null) boardUpdater.showStatus("Sunk " + res.shipKey + "!");
-                    if (matchController.isAllSunk(opponentPlayer)) {
-                        if (boardUpdater != null) boardUpdater.showStatus("You win!");
-                    }
+                if (isLocalAttack) {
+                    updateOpponentBoard(x, y, ShotState.HIT);
+                    updateStatus("Sunk " + result.shipKey + "!");
                 } else {
-                    if (boardUpdater != null) boardUpdater.updatePlayerCell(x, y);
-                    if (matchController.isAllSunk(localPlayer)) {
-                        if (boardUpdater != null) boardUpdater.showStatus("AI wins!");
-                    }
+                    updateLocalBoard(x, y);
+                    updateStatus("Opponent sunk your " + result.shipKey + "!");
                 }
                 matchController.endTurn();
             }
         }
     }
 
-    private void performAIMoves() {
-        while (vsAI && matchController.isTurn(opponentPlayer) && !matchController.isAllSunk(localPlayer)) {
-            AIPlayer.Coord c = aiAgent.pickNextAttack();
-            if (c == null) {
-                logger.warning("AI has no moves left");
-                break;
-            }
-
-            AttackResult res = matchController.attack(opponentPlayer, localPlayer, c.x, c.y);
-            handleAttackResult(res, c.x, c.y, false);
-        }
-
-        if (boardUpdater != null) {
-            Platform.runLater(() -> {
-                for (int x = 0; x < 10; x++) {
-                    for (int y = 0; y < 10; y++) {
-                        boardUpdater.updatePlayerCell(x, y);
-                    }
+    private void triggerOpponentTurn() {
+        if (opponentHandler == null) return;
+        
+        opponentHandler.executeOpponentTurn(new OpponentMoveCallback() {
+            @Override
+            public void reportAttack(int x, int y) {
+                handleOpponentAttack(x, y);
+                
+                if (matchController.isTurn(opponentPlayer) && 
+                    !matchController.isAllSunk(localPlayer) &&
+                    opponentHandler.shouldAutoExecuteTurn()) {
+                    triggerOpponentTurn();
                 }
-            });
+            }
+        });
+    }
+
+    private void updateLocalBoard(int x, int y) {
+        if (boardUpdater != null) {
+            boardUpdater.updateLocalShipCell(x, y);
         }
+    }
+
+    private void updateOpponentBoard(int x, int y, ShotState state) {
+        if (boardUpdater != null) {
+            boardUpdater.updateOpponentShotCell(x, y, state);
+        }
+    }
+
+    private void updateStatus(String message) {
+        if (boardUpdater != null) {
+            boardUpdater.showStatus(message);
+        }
+    }
+
+    public boolean isLocalPlayerTurn() {
+        return matchController.isTurn(localPlayer);
+    }
+
+    public boolean isGameOver() {
+        return matchController.isAllSunk(localPlayer) || matchController.isAllSunk(opponentPlayer);
+    }
+
+    public Player getLocalPlayer() {
+        return localPlayer;
+    }
+
+    public Player getOpponentPlayer() {
+        return opponentPlayer;
     }
 }
