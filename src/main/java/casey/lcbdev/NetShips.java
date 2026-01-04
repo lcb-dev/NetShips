@@ -95,6 +95,9 @@ public class NetShips extends Application {
         Button startBtn = new Button("Start");
         startBtn.setOnAction(e -> showGame(stage));
 
+        Button pveBtn = new Button("Start vs AI");
+        pveBtn.setOnAction(e -> showGameVsAI(stage));
+
         Button quitBtn = new Button("Quit");
         quitBtn.setOnAction(e -> {
             logger.info("Shutting down.");
@@ -104,7 +107,7 @@ public class NetShips extends Application {
         VBox menuRoot = new VBox(10);
         menuRoot.setPadding(new Insets(20));
         menuRoot.setAlignment(Pos.CENTER);
-        menuRoot.getChildren().addAll(startBtn, quitBtn);
+        menuRoot.getChildren().addAll(startBtn, pveBtn, quitBtn);
 
         Scene menuScene = new Scene(menuRoot, 800, 600);
         stage.setScene(menuScene);
