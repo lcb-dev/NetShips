@@ -2,7 +2,6 @@ package casey.lcbdev.model.game;
 
 import casey.lcbdev.model.board.ShotState;
 import casey.lcbdev.util.Logging;
-
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +24,7 @@ public class GameManager {
         void onGameOver(boolean localPlayerWon);
     }
 
+    // Interface for handling opponent moves (AI, Network, etc.)
     public interface OpponentHandler {
         /**
          * Called when it becomes the opponent's turn.
@@ -50,7 +50,6 @@ public class GameManager {
         this.boardUpdater = updater;
     }
 
-    // Local player
     public void handleLocalAttack(int x, int y) {
         if (!matchController.isTurn(localPlayer)) {
             updateStatus("Not your turn!");
@@ -60,7 +59,6 @@ public class GameManager {
         AttackResult result = matchController.attack(localPlayer, opponentPlayer, x, y);
         processAttackResult(result, x, y, true);
 
-        // Game over?
         if (matchController.isAllSunk(opponentPlayer)) {
             if (boardUpdater != null) {
                 boardUpdater.onGameOver(true);
@@ -68,7 +66,7 @@ public class GameManager {
             return;
         }
 
-        if (result.type == AttackResult.Type.MISS && 
+        if (matchController.isTurn(opponentPlayer) &&
             opponentHandler != null && 
             opponentHandler.shouldAutoExecuteTurn()) {
             triggerOpponentTurn();
@@ -84,7 +82,6 @@ public class GameManager {
         AttackResult result = matchController.attack(opponentPlayer, localPlayer, x, y);
         processAttackResult(result, x, y, false);
 
-        // Game over?
         if (matchController.isAllSunk(localPlayer)) {
             if (boardUpdater != null) {
                 boardUpdater.onGameOver(false);
@@ -112,13 +109,13 @@ public class GameManager {
             case HIT -> {
                 if (isLocalAttack) {
                     updateOpponentBoard(x, y, ShotState.HIT);
-                    updateStatus("Hit! (" + result.shipKey + ")");
+                    updateStatus("Hit! (" + result.shipKey + ") - Fire again!");
                 } else {
                     updateLocalBoard(x, y);
                     updateStatus("Opponent hit your " + result.shipKey);
                 }
             }
-            
+
             case SUNK -> {
                 if (isLocalAttack) {
                     updateOpponentBoard(x, y, ShotState.HIT);
@@ -134,12 +131,14 @@ public class GameManager {
 
     private void triggerOpponentTurn() {
         if (opponentHandler == null) return;
+        if (!matchController.isTurn(opponentPlayer)) return;
+        if (matchController.isAllSunk(localPlayer)) return;
         
         opponentHandler.executeOpponentTurn(new OpponentMoveCallback() {
             @Override
             public void reportAttack(int x, int y) {
                 handleOpponentAttack(x, y);
-                
+
                 if (matchController.isTurn(opponentPlayer) && 
                     !matchController.isAllSunk(localPlayer) &&
                     opponentHandler.shouldAutoExecuteTurn()) {
